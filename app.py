@@ -69,9 +69,6 @@ def showPlayerData(player_key,data_label):
         y=f'{data_label}:Q'
     )
 
-    # mad_lines = alt.Chart(pd.DataFrame({'points': [mean_y - mad_y, mean_y + mad_y]})).mark_rule(color='orange', strokeDash=[5, 5]).encode(
-    #     y='points:Q'
-    # )
     chart = (line + dots + mean_line + median_line)#
     st.title(slug_to_name(player_key))
     st.altair_chart(chart,use_container_width=True)
@@ -115,6 +112,9 @@ def showPlayerData(player_key,data_label):
 #     st.altair_chart(chart,use_container_width=True)
     
 
+
+
+# with st.form("single-stat-form"):
 st.session_state['data_label'] = 'points'
 player_selectbox = st.selectbox(
     "Player",
@@ -124,6 +124,7 @@ player_selectbox = st.selectbox(
     on_change=on_player_selectbox_change
 )
 
+#if a widget has a call back it is executed as a prefix to the entire page
 stat_selectbox = st.selectbox(
     "Stat",
     ['points','rebounds'],
@@ -131,6 +132,4 @@ stat_selectbox = st.selectbox(
     format_func=slug_to_name, 
     on_change=on_player_datalabel_change
 )
-
-st.write('You picked: ',player_selectbox)
 showPlayerData(playerList['players'][0],'points')
