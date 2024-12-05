@@ -116,20 +116,26 @@ def showPlayerData(player_key,data_label):
 
 # with st.form("single-stat-form"):
 st.session_state['data_label'] = 'points'
-player_selectbox = st.selectbox(
-    "Player",
-    playerList['players'],
-    key='player_key',
-    format_func= slug_to_name,
-    on_change=on_player_selectbox_change
-)
 
-#if a widget has a call back it is executed as a prefix to the entire page
-stat_selectbox = st.selectbox(
-    "Stat",
-    ['points','rebounds'],
-    key='data_label',
-    format_func=slug_to_name, 
-    on_change=on_player_datalabel_change
-)
-showPlayerData(playerList['players'][0],'points')
+
+@st.fragment
+def main_fragment():
+    player_selectbox = st.selectbox(
+        "Player",
+        playerList['players'],
+        key='player_key',
+        format_func= slug_to_name,
+        on_change=on_player_selectbox_change
+    )
+
+    #if a widget has a call back it is executed as a prefix to the entire page
+    stat_selectbox = st.selectbox(
+        "Stat",
+        ['points','rebounds'],
+        key='data_label',
+        format_func=slug_to_name, 
+        on_change=on_player_datalabel_change
+    )
+    # showPlayerData(playerList['players'][0],'points')
+
+main_fragment()
