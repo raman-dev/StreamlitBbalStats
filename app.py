@@ -38,10 +38,17 @@ def get_data_frame(player_key,data_label):
     })
     return df
 
-def showPlayerData(player_key,data_label):
+
+@st.cache_data
+def get_data_frame_all_stats(player_key):
+    raw_data = server.get_player_data(player_key)
+    
+    df = pd.DataFrame(raw_data['table'])
+    return df.drop(df.columns[[2,3,4]],axis = 1)
+
+def showPlayerData(df,player_key,data_label):
     # st.altair_chart(line + dots)
     # st.write(df)
-    df = get_data_frame(player_key,data_label)
     # Create a line chart
     line = alt.Chart(df).mark_line().encode(
         x='game',
@@ -72,47 +79,7 @@ def showPlayerData(player_key,data_label):
     chart = (line + dots + mean_line + median_line)#
     st.title(slug_to_name(player_key))
     st.altair_chart(chart,use_container_width=True)
-
-# def showPlayerData(player_key):
-#     # st.altair_chart(line + dots)
-#     # st.write(df)
-#     df = get_data_frame(player_key)
-#     # Create a line chart
-#     line = alt.Chart(df).mark_line().encode(
-#         x='game',
-#         y='points'
-#     )
-
-#     # Create a dot (point) chart
-#     dots = alt.Chart(df).mark_point(size=100).encode(
-#         x='game',
-#         y='points'
-#     )
-#     # st.line_chart(df,x='Game',y='points')
-#     # Calculate statistics
-#     mean_y = df['points'].mean()
-#     median_y = df['points'].median()
-#     # mad_y = df['points'].mad()
-
-#     # Create horizontal lines for mean ± MAD
-#     mean_line = alt.Chart(pd.DataFrame({'points': [mean_y]})).mark_rule(color='red').encode(
-#         y='points:Q'
-#     )
-
-#     # Median line
-#     median_line = alt.Chart(pd.DataFrame({'points': [median_y]})).mark_rule(color='cyan', strokeDash=[2, 2]).encode(
-#         y='points:Q'
-#     )
-
-#     # mad_lines = alt.Chart(pd.DataFrame({'points': [mean_y - mad_y, mean_y + mad_y]})).mark_rule(color='orange', strokeDash=[5, 5]).encode(
-#     #     y='points:Q'
-#     # )
-#     chart = (line + dots + mean_line + median_line)#
-#     st.title(slug_to_name(player_key))
-#     st.altair_chart(chart,use_container_width=True)
     
-
-
 
 # with st.form("single-stat-form"):
 st.session_state['data_label'] = 'points'
@@ -120,22 +87,27 @@ st.session_state['data_label'] = 'points'
 
 @st.fragment
 def main_fragment():
-    player_selectbox = st.selectbox(
+    st.selectbox(
         "Player",
         playerList['players'],
         key='player_key',
         format_func= slug_to_name,
-        on_change=on_player_selectbox_change
+        # on_change=on_player_selectbox_change
     )
 
     #if a widget has a call back it is executed as a prefix to the entire page
-    stat_selectbox = st.selectbox(
+    st.selectbox(
         "Stat",
         ['points','rebounds'],
         key='data_label',
         format_func=slug_to_name, 
-        on_change=on_player_datalabel_change
+        # on_change=on_player_datalabel_change
     )
-    # showPlayerData(playerList['players'][0],'points')
+    player_key = st.session_state['player_key']
+    data_label = st.session_state['data_label']
+    df_stat = get_data_frame(player_key,data_label)
+    df_all = get_data_frame_all_stats(player_key)
+    showPlayerData(df_stat,player_key,data_label)
+    st.write(df_all)
 
 main_fragment()
