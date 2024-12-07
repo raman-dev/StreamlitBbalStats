@@ -10,6 +10,7 @@ from DataServer import DataServer
 
 server = DataServer()
 playerList = server.get_players()
+statsAvailable = server.get_stats_available()
 #search box or list
 #need a dropdown list of player selection
 def on_player_selectbox_change():
@@ -24,17 +25,12 @@ def slug_to_name(slug):
     return  slug.replace("-", " ").title()
 
 @st.cache_data
-def get_data_frame(player_key,data_label):
-    data = None
-    match data_label:
-        case 'points':
-            data = server.get_player_points(player_key)
-        case 'rebounds':
-            data = server.get_player_rebounds(player_key)
-    # print(pointsData)
+def get_data_frame(player,stat):
+    data = server.get_player_stat(name=player,stat=stat)
+    result = data['docs'][0][stat]
     df = pd.DataFrame({
-        'game':range(len(data[data_label])),
-        data_label:[int(x) for x in data[data_label]]
+        'game':range(len(result)),
+        stat:[int(x) for x in result]
     })
     return df
 
@@ -82,8 +78,15 @@ def showPlayerData(df,player_key,data_label):
     
 
 # with st.form("single-stat-form"):
-st.session_state['data_label'] = 'points'
+st.session_state['data_label'] = 'pts'
 
+# stat_name_map = {
+#     'pts':'points',
+#     'trb':'Total Rebounds'
+# }
+# def stat_readable(stat):
+#     if stat in stat_name_map:
+#         return stat_name_map[stat].title()
 
 @st.fragment
 def main_fragment():
@@ -91,23 +94,24 @@ def main_fragment():
         "Player",
         playerList['players'],
         key='player_key',
-        format_func= slug_to_name,
-        # on_change=on_player_selectbox_change
+        format_func= str.title,
     )
 
     #if a widget has a call back it is executed as a prefix to the entire page
     st.selectbox(
         "Stat",
-        ['points','rebounds'],
+        statsAvailable,
         key='data_label',
-        format_func=slug_to_name, 
-        # on_change=on_player_datalabel_change
+        format_func=str.title, 
     )
     player_key = st.session_state['player_key']
     data_label = st.session_state['data_label']
     df_stat = get_data_frame(player_key,data_label)
-    df_all = get_data_frame_all_stats(player_key)
+    # df_all = get_data_frame_all_stats(player_key)
     showPlayerData(df_stat,player_key,data_label)
-    st.write(df_all)
+    # st.write(df_all)
 
 main_fragment()
+
+# data = server.get_player_stat('lauri markkanen','pts')
+# st.write(data['docs'][0]['pts'])

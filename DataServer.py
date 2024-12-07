@@ -1,4 +1,5 @@
 import requests
+import json 
 
 class DataServer:
     PLAYER_URL='http://localhost:5984/players'
@@ -10,13 +11,30 @@ class DataServer:
         #use requests library to request from the data server
         response = requests.get(DataServer.PLAYER_URL + DataServer.ALL_PLAYERS_VIEW)
         data = response.json()
-        players = [x['key'] for x in data['rows']]
+        players = [x['value'] for x in data['rows']]
         return {'players':players,'count': data['total_rows']}
     
     def get_player_data(self,player):
         response = requests.get(DataServer.PLAYER_URL + f'/{player}')
         return response.json()
     
+    def get_player_stat(self,name,stat):
+        body = {
+            'selector' :{'name':name},
+            'fields': [stat]
+        }
+        headers = {'Content-Type':'application/json'}
+        response = requests.post(
+            url=DataServer.PLAYER_URL + f'/_find',
+            headers=headers,
+            data=json.dumps(body))
+        data = response.json()
+        return data
+    
+    def get_stats_available(self):
+        response = requests.get(DataServer.PLAYER_URL + '/stats-info')
+        return response.json()['stats-available']
+
     def get_player_points(self,player):
         url = DataServer.PLAYER_URL +DataServer.POINTS_VIEW+ f'/?key="{player}"'
         print(url)
