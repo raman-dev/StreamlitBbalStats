@@ -13,13 +13,13 @@ playerList = server.get_players()
 statsAvailable = server.get_stats_available()
 #search box or list
 #need a dropdown list of player selection
-def on_player_selectbox_change():
-    # st.write('You picked: ',st.session_state['selected_option'])
-    player_key = st.session_state['player_key']
-    showPlayerData(player_key,st.session_state['data_label'])
+# def on_player_selectbox_change():
+#     # st.write('You picked: ',st.session_state['selected_option'])
+#     player_key = st.session_state['player_key']
+#     drawChart(player_key,st.session_state['data_label'])
 
-def on_player_datalabel_change():
-    showPlayerData(st.session_state['player_key'],st.session_state['data_label'])
+# def on_player_datalabel_change():
+#     drawChart(st.session_state['player_key'],st.session_state['data_label'])
 
 def slug_to_name(slug):
     return  slug.replace("-", " ").title()
@@ -42,10 +42,12 @@ def get_data_frame_all_stats(player_key):
     df = pd.DataFrame(raw_data['table'])
     return df.drop(df.columns[[2,3,4]],axis = 1)
 
-def showPlayerData(df,player_key,data_label):
+def drawChart(df,player_key,data_label,upperMax):
     # st.altair_chart(line + dots)
     # st.write(df)
     # Create a line chart
+    dimens = df.shape
+    # st.write('Shaper => ',dimens)
     line = alt.Chart(df).mark_line().encode(
         x='game',
         y=data_label
@@ -63,18 +65,26 @@ def showPlayerData(df,player_key,data_label):
     # mad_y = df['points'].mad()
 
     # Create horizontal lines for mean ± MAD
-    mean_line = alt.Chart(pd.DataFrame({data_label: [mean_y]})).mark_rule(color='red').encode(
+    mean_line = alt.Chart(pd.DataFrame({data_label: [mean_y]})).mark_rule(color='cyan',strokeDash=[2,2]).encode(
         y=f'{data_label}:Q'
     )
 
     # Median line
-    median_line = alt.Chart(pd.DataFrame({data_label: [median_y]})).mark_rule(color='cyan', strokeDash=[2, 2]).encode(
-        y=f'{data_label}:Q'
-    )
+    # median_line = alt.Chart(pd.DataFrame({data_label: [median_y]})).mark_rule(color='cyan', strokeDash=[2, 2]).encode(
+    #     y=f'{data_label}:Q'
+    # )
 
-    chart = (line + dots + mean_line + median_line)#
+    upperRangeLine = alt.Chart(
+        pd.DataFrame({
+            'game':range(dimens[0]),
+            'upper':[upperMax]*dimens[0]
+        }),
+    ).mark_line(color='rgb(255, 75, 75)').encode(x='game',y='upper')
+
+    chart = (line + dots + mean_line +upperRangeLine)#
     st.title(slug_to_name(player_key))
     st.altair_chart(chart,use_container_width=True)
+    return chart
     
 
 # with st.form("single-stat-form"):
@@ -87,6 +97,28 @@ st.session_state['data_label'] = 'pts'
 # def stat_readable(stat):
 #     if stat in stat_name_map:
 #         return stat_name_map[stat].title()
+
+@st.fragment
+def chart_fragment():
+    player_key = st.session_state['player_key']
+    data_label = st.session_state['data_label']
+    df_stat = get_data_frame(player_key,data_label)
+    # df_all = get_data_frame_all_stats(player_key)
+    lowerMax = 5
+    upperMax = 35
+    drawChart(df_stat,player_key,data_label,upperMax)
+    # st.write(df_all)
+    # upper = st.slider("upper",15,34)
+    # lower = st.slider("lower",0,15)
+    values = st.slider(
+        "Range ",
+        lowerMax,
+        upperMax,
+        (15,35),
+        key='slider_vals',
+        # on_change=st.rerun
+    )
+    # st.write("Values => ",values)
 
 @st.fragment
 def main_fragment():
@@ -104,14 +136,7 @@ def main_fragment():
         key='data_label',
         format_func=str.title, 
     )
-    player_key = st.session_state['player_key']
-    data_label = st.session_state['data_label']
-    df_stat = get_data_frame(player_key,data_label)
-    # df_all = get_data_frame_all_stats(player_key)
-    showPlayerData(df_stat,player_key,data_label)
-    # st.write(df_all)
-
+    #when the values change we need to render 2 lines in different locations
+    chart_fragment()
 main_fragment()
 
-# data = server.get_player_stat('lauri markkanen','pts')
-# st.write(data['docs'][0]['pts'])
