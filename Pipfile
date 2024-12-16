@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 streamlit = "*"
+plotly = "*"
+orjson = "*"
 
 [dev-packages]
 

@@ -35,16 +35,3 @@ class DataServer:
         response = requests.get(DataServer.PLAYER_URL + '/stats-info')
         return response.json()['stats-available']
 
-    def get_player_points(self,player):
-        url = DataServer.PLAYER_URL +DataServer.POINTS_VIEW+ f'/?key="{player}"'
-        print(url)
-        response = requests.get(url)
-        raw_data = response.json()
-        return raw_data['rows'][0]['value']
-
-    def get_player_rebounds(self,player):
-        url = DataServer.PLAYER_URL +DataServer.REBOUNDS_VIEW+ f'/?key="{player}"'
-        print(url)
-        response = requests.get(url)
-        raw_data = response.json()
-        return raw_data['rows'][0]['value']
