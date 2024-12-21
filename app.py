@@ -43,45 +43,47 @@ def drawChart(df,player_key,data_label,lowerMax,upperMax):
     # Create a line chart
     dimens = df.shape
     # st.write('Shaper => ',dimens)
-    line = alt.Chart(df).mark_line().encode(
-        x='game',
-        y=data_label
-    )
+    line = alt.Chart(
+        df,title=f'{slug_to_name(data_label)} per Game'
+        ).mark_line().encode(
+            x='game',
+            y=data_label,
+            # color="Legend"
+            )
 
     # Create a dot (point) chart
     dots = alt.Chart(df).mark_point(size=100).encode(
         x='game',
         y=data_label
     )
-    # st.line_chart(df,x='Game',y='points')
     # Calculate statistics
     mean_y = df[data_label].mean()
-    median_y = df[data_label].median()
-    # mad_y = df['points'].mad()
-
     # Create horizontal lines for mean ± MAD
-    mean_line = alt.Chart(pd.DataFrame({data_label: [mean_y]})).mark_rule(color='cyan',strokeDash=[2,2]).encode(
-        y=f'{data_label}:Q'
-    )
+    mean_line = alt.Chart(
+        pd.DataFrame({data_label: [mean_y]})
+        ).mark_rule(
+            color='cyan',strokeDash=[2,2]
+            ).encode(
+                y=f'{data_label}:Q')
 
     # Median line
     # median_line = alt.Chart(pd.DataFrame({data_label: [median_y]})).mark_rule(color='cyan', strokeDash=[2, 2]).encode(
     #     y=f'{data_label}:Q'
     # )
 
-    upperRangeLine = alt.Chart(
-        pd.DataFrame({
-            'game':range(dimens[0]),
-            'upper':[upperMax]*dimens[0]
-        }),
-    ).mark_line(color='rgb(255, 75, 75)').encode(x='game',y='upper')
+    # upperRangeLine = alt.Chart(
+    #     pd.DataFrame({
+    #         'game':range(dimens[0]),
+    #         'upper':[upperMax]*dimens[0]
+    #     }),
+    # ).mark_line(color='rgb(255, 75, 75)').encode(x='game',y='upper')
 
-    lowerRangeLine = alt.Chart(
-        pd.DataFrame({
-            'game':range(dimens[0]),
-            'lower':[lowerMax]*dimens[0]
-        }),
-    ).mark_line(color='rgb(255, 75, 75)').encode(x='game',y='lower')
+    # lowerRangeLine = alt.Chart(
+    #     pd.DataFrame({
+    #         'game':range(dimens[0]),
+    #         'lower':[lowerMax]*dimens[0]
+    #     }),
+    # ).mark_line(color='rgb(255, 75, 75)').encode(x='game',y='lower')
 
     chart = (line + dots + mean_line) #+ upperRangeLine + lowerRangeLine)#
     st.title(slug_to_name(player_key))
@@ -246,8 +248,5 @@ def plotly_express_fragment():
         })
     st.write(fig)
 
-
-# plotly_go_fragment()
-# plotly_express_fragment()
 main_fragment()
 
