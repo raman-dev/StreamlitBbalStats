@@ -77,7 +77,7 @@ def main_fragment():
     )
 
     #mark_rule for horizontal lines
-    avg_line = alt.Chart(df).mark_rule(color='cyan',strokeDash=[2,2]).encode(
+    avg_line = alt.Chart(df).mark_rule(color='cyan',strokeDash=[2,1],strokeWidth=2).encode(
         y=f'mean({st.session_state["data_label"]}):Q'
     )
     num_games = len(df['game'])
@@ -85,16 +85,27 @@ def main_fragment():
     low_line  = alt.Chart(pd.DataFrame({'low':[low_high_range[0]] * num_games})).mark_rule(color='orangered').encode(y='low:Q')
     high_line = alt.Chart(pd.DataFrame({'high':[low_high_range[1]] * num_games})).mark_rule(color='limegreen').encode(y='high:Q')
     
-    
+    range_area = alt.Chart(pd.DataFrame({
+        'game':df['game'],
+        'low':[low_high_range[0]] * num_games,
+        'high':[low_high_range[1]] * num_games})).mark_area(opacity=0.3).encode(
+            alt.X('game:Q'),
+            alt.Y('low:Q'),
+            alt.Y2('high:Q')
+        )
+
     points = alt.Chart(df).mark_point(size=100).encode(
         alt.X('game'),
         alt.Y(f'{st.session_state["data_label"]}:Q')
     )
 
     st.header(slug_to_name(st.session_state['player_key']))
-    result_chart = line + points + avg_line
+    result_chart = None
     if render_extra:
-        result_chart += low_line + high_line
+        result_chart = range_area + line + points
+    else:
+        result_chart = line + points#low_line + high_line
+    result_chart += avg_line
     st.altair_chart(result_chart,use_container_width=True)
 
 main_fragment()
