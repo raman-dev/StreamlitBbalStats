@@ -11,12 +11,16 @@ class DataServer:
         #use requests library to request from the data server
         response = requests.get(DataServer.PLAYER_URL + DataServer.ALL_PLAYERS_VIEW)
         data = response.json()
-        players = [x['value'] for x in data['rows']]
-        return {'players':players,'count': data['total_rows']}
+        return {'players':[x['id'] for x in data['rows']], 'count':data['total_rows']}#count
     
     def get_player_data(self,player):
         response = requests.get(DataServer.PLAYER_URL + f'/{player}')
-        return response.json()
+        #drop revision id and id
+        data = response.json()
+        dropDataMappings = ['_id','_rev','name','age']
+        for x in dropDataMappings:
+            data.pop(x)
+        return data
     
     def get_player_stat(self,name,stat):
         body = {
