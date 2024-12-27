@@ -30,7 +30,9 @@ def get_data_frame(player):
     df = pd.DataFrame(data)
     return df
 
+
 st.session_state["data_label"] = "pts"
+
 
 @st.fragment
 def main_fragment():
@@ -55,17 +57,20 @@ def main_fragment():
 
     stat_row = df[st.session_state["data_label"]]
     min_stat, max_stat = stat_row.min(), stat_row.max()
-    delta = (max_stat - min_stat)/4
+    delta = (max_stat - min_stat) / 4
     if type(min_stat) == numpy.int64:
         delta = int(delta)
-    
-    s,e = min_stat + delta,max_stat - delta
+
+    s, e = min_stat + delta, max_stat - delta
     with range_select_column:
         # need a high low slider
         with st.form("stat-range"):
-            
-            low_high_range = st.select_slider("Low High Range",value=(s,e),options=list(range(min_stat,max_stat + 1)))
-
+            low_high_range = st.slider(
+                "Range",
+                min_value=min_stat,
+                max_value=max_stat,
+                value=(s, e)
+            )
             render_extra = st.checkbox("Show", value=False)
             st.form_submit_button("Update chart")
 
@@ -103,22 +108,29 @@ def main_fragment():
         .encode(alt.X("game:Q"), alt.Y("low:Q"), alt.Y2("high:Q"))
     )
 
-    points_tooltip = ['game','pts','fg:Q','fga:Q','mp']
-    range_points = alt.Chart(df).mark_point(size=100,filled=True).encode(
-        x='game:Q',
-        y=f'{st.session_state["data_label"]}:Q',
-        tooltip=points_tooltip
-    ).transform_filter(
-        f'datum.{st.session_state["data_label"]} >= {low_high_range[0]} && datum.{st.session_state["data_label"]} <= {low_high_range[1]}'
+    points_tooltip = ["game", "pts", "fg:Q", "fga:Q", "mp","game_result"]
+    range_points = (
+        alt.Chart(df)
+        .mark_point(size=100, filled=True)
+        .encode(
+            alt.X("game:Q"),
+            alt.Y(f'{st.session_state["data_label"]}:Q'), 
+            # size = f'ft:Q',
+            tooltip=points_tooltip
+        )
+        .transform_filter(
+            f'datum.{st.session_state["data_label"]} >= {low_high_range[0]} && datum.{st.session_state["data_label"]} <= {low_high_range[1]}'
+        )
     )
 
     points = (
         alt.Chart(df)
         .mark_point(size=100)
         .encode(
-            alt.X("game"), 
+            alt.X("game"),
             alt.Y(f'{st.session_state["data_label"]}:Q'),
-            tooltip=points_tooltip)
+            tooltip=points_tooltip,
+        )
     )
 
     st.header(slug_to_name(st.session_state["player_key"]))
@@ -129,6 +141,5 @@ def main_fragment():
         result_chart = line + points  # low_line + high_line
     result_chart += avg_line
     st.altair_chart(result_chart, use_container_width=True)
-
 
 main_fragment()
