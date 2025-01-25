@@ -12,6 +12,10 @@ class DataServer:
         response = requests.get(DataServer.PLAYER_URL + DataServer.ALL_PLAYERS_VIEW)
         data = response.json()
         return {'players':[x['id'] for x in data['rows']], 'count':data['total_rows']}#count
+
+    def get_teams(self):
+        response = requests.get(DataServer.)
+        return {}
     
     def get_player_data(self,player):
         response = requests.get(DataServer.PLAYER_URL + f'/{player}')

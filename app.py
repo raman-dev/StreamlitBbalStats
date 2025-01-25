@@ -14,6 +14,7 @@ from DataServer import DataServer
 
 server = DataServer()
 playerList = server.get_players()
+teamList = server.get_teams()
 statsAvailable = server.get_stats_available()
 # search box or list
 
@@ -108,7 +109,7 @@ def main_fragment():
         .encode(alt.X("game:Q"), alt.Y("low:Q"), alt.Y2("high:Q"))
     )
 
-    points_tooltip = ["game", "pts", "fg:Q", "fga:Q", "mp","game_result"]
+    points_tooltip = ["pts", "fg:Q", "fga:Q", "mp","game_result"]
     range_points = (
         alt.Chart(df)
         .mark_point(size=100, filled=True)
