@@ -14,8 +14,37 @@ class DataServer:
         return {'players':[x['id'] for x in data['rows']], 'count':data['total_rows']}#count
 
     def get_teams(self):
-        response = requests.get(DataServer.)
-        return {}
+        body = {
+            'selector' :{},#no selector since we want all teams 
+            'fields': ['name','team_id'],
+            'limit':1000
+        }
+        headers = {'Content-Type':'application/json'}
+        response = requests.post(
+            url=DataServer.PLAYER_URL + f'/_find',
+            headers=headers,
+            data=json.dumps(body))
+        data = response.json()
+        """
+            docs:[
+                {
+                    name:val
+                    team_id:[] get last value of this
+                },{}
+            ]
+        """
+        # teams = set()
+        teamNameMap = {}
+        for x in data['docs']:
+            if 'team_id' not in x:
+                continue
+            team_list = x['team_id']
+
+            team = team_list[-1]
+            if team not in teamNameMap:
+                teamNameMap[team] = []
+            teamNameMap[team].append(x['name'])
+        return list(teamNameMap.keys()),teamNameMap
     
     def get_player_data(self,player):
         response = requests.get(DataServer.PLAYER_URL + f'/{player}')

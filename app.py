@@ -14,10 +14,9 @@ from DataServer import DataServer
 
 server = DataServer()
 playerList = server.get_players()
-teamList = server.get_teams()
+teams,teamMap = server.get_teams()
 statsAvailable = server.get_stats_available()
 # search box or list
-
 
 def slug_to_name(slug):
     return slug.replace("-", " ").title()
@@ -40,6 +39,11 @@ def main_fragment():
 
     player_select_column, range_select_column = st.columns(2)
     with player_select_column:
+        st.selectbox(
+            "Team",
+            teams,
+            key='team',
+        )
         st.selectbox(
             "Player",
             playerList["players"],
